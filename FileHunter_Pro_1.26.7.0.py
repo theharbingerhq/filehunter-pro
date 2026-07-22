@@ -717,16 +717,16 @@ if st.session_state.stage in ("analyzing", "downloading"):
             with c1:
                 if st.button("Cancel", use_container_width=True):
                     st.session_state.confirm_stop = False
-                    st.rerun()
+                    st.rerun(scope="fragment")
             with c2:
                 if st.button("Yes, stop", type="primary", use_container_width=True):
                     st.session_state.stop_event.set()
                     st.session_state.confirm_stop = False
-                    st.rerun()
+                    st.rerun(scope="fragment")
         else:
             if st.button(stop_label, use_container_width=True):
                 st.session_state.confirm_stop = True
-                st.rerun()
+                st.rerun(scope="fragment")
 
         if not p["running"]:
             st.session_state.confirm_stop = False
