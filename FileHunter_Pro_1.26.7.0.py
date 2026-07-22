@@ -79,15 +79,15 @@ HEADERS = {"User-Agent": cfg("network", "user_agent", "FileHunterPro")}
 # .txt upload cap. MAX_TXT_UPLOAD_MB must be <= server.maxUploadSize in
 # .streamlit/config.toml, or the browser blocks the upload before it
 # reaches this script.
-MAX_TXT_UPLOAD_MB = cfg_int("limits", "max_txt_upload_mb", 200)
+MAX_TXT_UPLOAD_MB = cfg_int("limits", "max_txt_upload_mb", 100)
 MAX_TXT_UPLOAD_BYTES = MAX_TXT_UPLOAD_MB * 1024 * 1024
 
 # Package-size cap. MAX_DOWNLOAD_MB is the advertised hard limit;
 # DOWNLOAD_HIDE_THRESHOLD_MB is a small buffer above it — once crossed, the
 # Download button is hidden rather than letting a run fail at the last step.
-MAX_DOWNLOAD_MB = cfg_int("limits", "max_download_mb", 2000)
+MAX_DOWNLOAD_MB = cfg_int("limits", "max_download_mb", 600)
 MAX_DOWNLOAD_BYTES = MAX_DOWNLOAD_MB * 1024 * 1024
-DOWNLOAD_HIDE_THRESHOLD_MB = cfg_int("limits", "download_hide_threshold_mb", 2010)
+DOWNLOAD_HIDE_THRESHOLD_MB = cfg_int("limits", "download_hide_threshold_mb", 610)
 DOWNLOAD_HIDE_THRESHOLD_BYTES = DOWNLOAD_HIDE_THRESHOLD_MB * 1024 * 1024
 
 CHUNK_SIZE = cfg_int("limits", "chunk_size_kb", 256) * 1024
@@ -612,7 +612,7 @@ with b2:
             "3. **Download** — reachable files are fetched oldest-first and streamed straight "
             "into a single `.zip` package, each keeping its original modified date.\n"
             "4. **Confirm & save** — review the package size, then save it to your device.\n\n"
-            f"Packages are capped at **{MAX_DOWNLOAD_MB}MB (~2GB)** total. If your list is "
+            f"Packages are capped at **{MAX_DOWNLOAD_MB}MB ** total. If your list is "
             "larger than that, split it across a few `.txt` files and run them one at a time."
         )
 with b3:
@@ -793,7 +793,7 @@ if st.session_state.stage in ("analyzed", "completed"):
         elif over_cap:
             st.error(
                 f"Total size ({human_size(total_size)}) exceeds the "
-                f"{MAX_DOWNLOAD_MB}MB (~2GB) package limit, so the download "
+                f"{MAX_DOWNLOAD_MB}MB package limit, so the download "
                 f"button is hidden. Remove a few links or split your list into "
                 f"smaller batches to bring the total under {MAX_DOWNLOAD_MB}MB."
             )
@@ -804,7 +804,7 @@ if st.session_state.stage in ("analyzed", "completed"):
                     # and click (e.g. re-analysis in another tab).
                     st.session_state.download_blocked_msg = (
                         f"Package size ({human_size(total_size)}) is over the "
-                        f"{MAX_DOWNLOAD_MB}MB (~2GB) limit, so this download can't start. "
+                        f"{MAX_DOWNLOAD_MB}MB limit, so this download can't start. "
                         f"Remove a few links and try again."
                     )
                     st.rerun()
@@ -910,7 +910,7 @@ FAQ_ITEMS = [
         "skipped; they don't stop the rest of your list from being analyzed or downloaded.",
     ),
     (
-        f"Why is there a {MAX_DOWNLOAD_MB}MB (2GB) limit?",
+        f"Why is there a {MAX_DOWNLOAD_MB}MB limit?",
         "This keeps each session's memory and storage use predictable, especially when "
         "the app is hosted on a server with limited disk space. If your list adds up to "
         "more than that, split it into a few smaller `.txt` files and run them one at a time.",

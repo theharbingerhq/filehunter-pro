@@ -11,4 +11,4 @@ font = "sans serif"
 
 [server]
 # Must be >= MAX_TXT_UPLOAD_MB in the main python file, or the browser rejects large
-maxUploadSize = 200
+maxUploadSize = 100
