@@ -188,8 +188,8 @@ To prevent excessive memory or storage usage, File Hunter Pro enforces configura
 
 | Limit                  | Default (Configurable) |
 |------------------------|------------------------|
-| Upload file size       | 200 MB                 |
-| Download package size  | ~2 GB                  |
+| Upload file size       | 100 MB                 |
+| Download package size  | 600 MB                 |
 
 ---
 
