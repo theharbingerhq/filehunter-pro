@@ -1,33 +1,59 @@
 {
-  "name": "Python 3",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  // ==========================================================================
+  // File Hunter Pro - Development Container Configuration
+  // ==========================================================================
+
+  "name": "File Hunter Pro",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
   "customizations": {
     "codespaces": {
       "openFiles": [
         "README.md",
-        "FileHunter_Pro_1.26.7.0.py"
+        "fhpro_main.py"
       ]
     },
     "vscode": {
-      "settings": {},
+      "settings": {
+        "editor.formatOnSave": true,
+        "python.analysis.typeCheckingMode": "basic",
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        }
+      },
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "charliermarsh.ruff"
       ]
     }
   },
-  "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
-  "postAttachCommand": {
-    "server": "streamlit run FileHunter_Pro_1.26.7.0.py --server.enableCORS false --server.enableXsrfProtection false"
+
+  "remoteEnv": {
+    "STREAMLIT_SERVER_FILE_WATCHER_TYPE": "poll"
   },
+
+  "updateContentCommand": "python -m pip install --upgrade pip && [ -f packages.txt ] && sudo apt-get update && sudo xargs -a packages.txt apt-get install -y --no-install-recommends; [ -f requirements.txt ] && python -m pip install --user --no-cache-dir -r requirements.txt; python -m pip show streamlit >/dev/null 2>&1 || python -m pip install --user --no-cache-dir streamlit; echo '🚀 File Hunter Pro development environment is ready!'",
+
+  "postAttachCommand": {
+    "server": "streamlit run fhpro_main.py --server.address=0.0.0.0 --server.port=8080 --server.enableCORS=false --server.enableXsrfProtection=false --browser.gatherUsageStats=false"
+  },
+
   "portsAttributes": {
-    "8501": {
-      "label": "Application",
-      "onAutoForward": "openPreview"
+    "8080": {
+      "label": "File Hunter Pro",
+      "onAutoForward": "openBrowser"
     }
   },
+
   "forwardPorts": [
-    8501
+    8080
   ]
 }
