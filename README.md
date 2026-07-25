@@ -137,7 +137,7 @@ pip install -r requirements.txt
 ### Run the app
 
 ```bash
-streamlit run FileHunter_Pro_1.26.7.0.py
+streamlit run fhpro_main.py
 ```
 
 Then open your browser at:
@@ -157,7 +157,7 @@ File Hunter Pro can be hosted on Windows, Linux, macOS, Streamlit Community Clou
 ```text
 FileHunterPro/
 │
-├── FileHunter_Pro_1.26.7.0.py
+├── fhpro_main.py
 ├── assets
 │    ├── app_logo.ico
 │    ├── app_logo.svg

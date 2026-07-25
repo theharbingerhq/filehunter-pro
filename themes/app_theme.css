@@ -1,267 +1,457 @@
-/* ------------------------------------
- * File Hunter Pro - Theme Stylesheet
- * ------------------------------------
-*/
+/* File Hunter Pro — "Emerald HUD" theme stylesheet. Palette is derived
+   entirely from app_logo.svg (emerald -> green -> gold gradient, teal
+   accent, white sparkle glow), plus one muted red reserved for alerts.
+   Visual language blends a macOS-style titlebar, dot-matrix telemetry,
+   soft layered elevation, and HUD-style corner brackets. */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Fonts are loaded via <link> tags in the Python file, not @import here,
+   so they fetch in parallel with the rest of the page. */
 
 :root{
-  --bg:#0A0F0D;
-  /* Glass surfaces: translucent so backdrop-filter has something to
-     frost. Solid fallbacks kept for anything that can't blur. */
-  --surface: rgba(26,35,31,0.52); --surface-solid:#141B18;
-  --surface-2: rgba(34,45,40,0.52); --surface-2-solid:#1A231F;
-  --border: rgba(150,178,165,0.14); --border-hover: rgba(150,178,165,0.30);
-  --text:#EAF2EE; --muted:#8FA39A;
-  --emerald:#0E9F6E; --green:#27AE60; --gold:#F7DC6F; --teal:#16A085;
-  --danger:#E75A4C;
-  --grad: linear-gradient(135deg, var(--emerald) 0%, var(--green) 55%, var(--gold) 100%);
-  --glass-blur: blur(20px) saturate(140%);
-  --shadow-rest: 0 4px 18px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.05);
-  --shadow-hover: 0 14px 34px rgba(0,0,0,0.42), 0 0 0 1px rgba(14,159,110,0.20), inset 0 1px 0 rgba(255,255,255,0.07);
+  /* ---- base: near-black with a whisper of forest-green, not neutral gray ---- */
+  --bg:#070F0C;
+  --surface: rgba(16,32,26,0.66);      --surface-solid:#0F1C17;
+  --surface-2: rgba(21,40,33,0.70);    --surface-2-solid:#17281F;
+  --border: rgba(150,215,190,0.16);    --border-hover: rgba(46,204,142,0.42);
+  --text:#EAF6EF; --muted:#9FB8AC;
+
+  /* ---- logo palette (source of truth) ---- */
+  --emerald:#0E9F6E; --green:#27AE60; --gold:#F7DC6F; --teal:#16A085; --white:#FFFFFF;
+
+  /* ---- the one functional non-logo color: muted alert red ---- */
+  --danger:#F0554B;
+
+  /* logo's own gradient stops, reused exactly: 0% / 55% / 100% */
+  --grad: linear-gradient(120deg, var(--emerald) 0%, var(--green) 55%, var(--gold) 100%);
+  --grad-soft: linear-gradient(120deg, rgba(14,159,110,0.16), rgba(247,220,111,0.14));
+  --grad-teal: linear-gradient(120deg, var(--teal) 0%, var(--emerald) 100%);
+
+  --glass-blur: blur(12px) saturate(140%);
+  --radius-lg:26px; --radius-md:18px; --radius-sm:12px;
+  --shadow-rest: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 30px rgba(0,0,0,0.42);
+  --shadow-hover: 0 1px 0 rgba(255,255,255,0.07) inset, 0 0 0 1px rgba(46,204,142,0.24), 0 20px 46px rgba(0,0,0,0.54);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---- secondary text + hairline divider (distinct from the greenish --muted/--border above) ---- */
+  --text-secondary: #9CA3AF;
+  --divider: rgba(255,255,255,0.08);
+
+  /* ---- inline Bootstrap-icon accents used in dialogs/help copy ---- */
+  --accent-success:  #22C55E;  /* license / upload-step icons */
+  --accent-info:     #3B82F6;  /* webapp / analyze-step icons */
+  --accent-warning:  #F59E0B;  /* build / download-step / warning-banner icons */
+  --accent-note:     #0EA5E9;  /* "Important Notes" heading icon */
+  --accent-complete: #10B981;  /* final "Save Package" step icon */
 }
 
-html, body, [class*="css"] { font-family: 'Inter', sans-serif;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
+/* System-font fallback stack in case the Google Fonts CDN is unreachable */
+html, body, [class*="css"] {
+  font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin:0 !important; padding:0 !important; overflow-x:hidden !important;
 }
 
+/* ---- App backdrop: emerald/gold nebula glow + faint dot grid ---- */
 .stApp {
   background:
-    radial-gradient(circle at 12% 6%, rgba(14,159,110,0.16), transparent 42%),
-    radial-gradient(circle at 88% 18%, rgba(247,220,111,0.10), transparent 38%),
-    radial-gradient(circle at 45% 96%, rgba(22,160,133,0.13), transparent 46%),
+    radial-gradient(circle at 10% 0%, rgba(14,159,110,0.16), transparent 40%),
+    radial-gradient(circle at 92% 14%, rgba(247,220,111,0.09), transparent 38%),
+    radial-gradient(circle at 50% 100%, rgba(22,160,133,0.13), transparent 48%),
+    repeating-radial-gradient(circle at 0 0, rgba(255,255,255,0.028) 0 1px, transparent 1px 28px),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
+  animation: fhp-app-in .5s var(--ease) both;
 }
-
-/* Always-dark: force color-scheme so native form controls (date pickers,
-   scrollbars, etc.) render dark-themed rather than deferring to the
-   browser/OS light-mode default. */
 :root, .stApp { color-scheme: dark; }
+@keyframes fhp-app-in{ from{ opacity:0; } to{ opacity:1; } }
 
-/* Fully remove Streamlit's native fixed header/toolbar/decoration bar — it
-   was floating on top of the app (z-index above everything else) and
-   clipping the top of the hero pad (logo + title) underneath it. */
-header[data-testid="stHeader"],
-[data-testid="stDecoration"],
-#MainMenu, footer { display:none !important; visibility:hidden; height:0 !important; }
+header[data-testid="stHeader"], [data-testid="stDecoration"], #MainMenu, footer { display:none !important; visibility:hidden; height:0 !important; }
 .stApp > header { display:none !important; }
-
 .block-container { padding-top: 1.6rem !important; padding-bottom: 4.5rem !important; max-width: 760px; }
 
-/* ---- Hero pad: frosted glass, layered depth, logo, title, badges ---- */
-.fhp-hero{
-  position:relative; overflow:hidden; isolation:isolate;
-  background: var(--surface);
+
+/* ---- macOS-style titlebar strip on the hero ---- */
+.fhp-titlebar{ position:relative; z-index:3; display:flex; align-items:center; gap:8px; justify-content:space-between;
+  margin:-.15rem -.2rem .65rem -.2rem; padding-bottom:.55rem; border-bottom:1px solid rgba(150,215,190,0.12); }
+.fhp-titlebar-left{ display:flex; align-items:center; gap:8px; }
+.fhp-titlebar-right{ display:flex; align-items:center; gap:8px; }
+.fhp-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1px rgba(0,0,0,0.25) inset; }
+.fhp-dot.red{ background:var(--danger); box-shadow:0 0 8px rgba(240,85,75,0.55); }
+.fhp-dot.yellow{ background:var(--gold); box-shadow:0 0 8px rgba(247,220,111,0.45); }
+.fhp-dot.green{ background:var(--green); box-shadow:0 0 8px rgba(39,174,96,0.5); }
+.fhp-titlebar-label{ margin-left:6px; font-family:'JetBrains Mono', monospace; font-size:0.68rem;
+  letter-spacing:.03em; color:var(--muted); }
+
+/* Hero + navigation — single glass panel (key="fhp_hero") holding the
+   branding/session header and the nav buttons, divided by a thin seam */
+.st-key-fhp_hero, [data-testid="stVerticalBlockBorderWrapper"].st-key-fhp_hero{
+  overflow:hidden; isolation:isolate; position:relative;
+  background: var(--surface) !important;
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-  border:1px solid var(--border); border-radius:22px;
-  box-shadow: var(--shadow-rest);
-  padding:1.2rem 1.5rem; margin-bottom:0.8rem;
+  border:1px solid var(--border) !important; border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-rest) !important;
+  padding:1.1rem 1.4rem 1.2rem 1.4rem !important; margin-bottom:0.8rem;
   transition: box-shadow .4s var(--ease), border-color .4s var(--ease);
+  animation: fhp-rise-in .55s var(--ease) both;
 }
-.fhp-hero:hover{ border-color:var(--border-hover); box-shadow: var(--shadow-hover); }
-.fhp-hero::before{
+.st-key-fhp_hero:hover{ border-color:var(--border-hover) !important; box-shadow: var(--shadow-hover) !important; }
+.st-key-fhp_hero::before{
   content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-  background:linear-gradient(120deg, transparent 30%, rgba(14,159,110,0.14) 45%,
-    rgba(247,220,111,0.16) 50%, rgba(14,159,110,0.14) 55%, transparent 70%);
-  background-size:260% 260%;
+  background: repeating-linear-gradient(0deg, rgba(46,204,142,0.05) 0px, transparent 2px, transparent 4px),
+    linear-gradient(120deg, transparent 30%, rgba(14,159,110,0.16) 45%,
+    rgba(247,220,111,0.14) 50%, rgba(14,159,110,0.16) 55%, transparent 70%);
+  background-size: 100% 100%, 260% 260%;
   animation: fhp-render-sweep 10s ease-in-out infinite;
 }
-/* Thin bright hairline along the top edge — the classic "light catching
-   the rim of glass" cue that sells the frosted-panel effect. */
-.fhp-hero::after{
-  content:""; position:absolute; top:0; left:6%; right:6%; height:1px; z-index:1;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-}
-@keyframes fhp-render-sweep{
-  0%{ background-position:0% 0%; }
-  50%{ background-position:100% 100%; }
-  100%{ background-position:0% 0%; }
-}
+@keyframes fhp-render-sweep{ 0%{ background-position:0 0, 0% 0%; } 50%{ background-position:0 0, 100% 100%; } 100%{ background-position:0 0, 0% 0%; } }
+@keyframes fhp-rise-in{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+/* Sparkle twinkle — span classes g/e/t each glow a different logo hue;
+   per-instance position/timing comes from inline --gx/--gy/--gd vars */
 .fhp-glitter{ position:absolute; inset:0; z-index:0; pointer-events:none; }
-.fhp-glitter span{
-  position:absolute; width:3px; height:3px; border-radius:50%;
-  background:var(--gold); box-shadow:0 0 6px 1px rgba(247,220,111,0.9);
-  animation: fhp-twinkle 2.8s ease-in-out infinite;
-}
+.fhp-glitter span{ position:absolute; width:3px; height:3px; border-radius:50%;
+  top:var(--gy, 50%); left:var(--gx, 50%); animation: fhp-twinkle 2.8s ease-in-out infinite;
+  animation-delay:var(--gd, 0s); background:var(--white); }
+.fhp-glitter span.g{ box-shadow:0 0 7px 1.5px rgba(247,220,111,0.9); }   /* gold */
+.fhp-glitter span.e{ box-shadow:0 0 7px 1.5px rgba(14,159,110,0.9); }    /* emerald */
+.fhp-glitter span.t{ box-shadow:0 0 7px 1.5px rgba(22,160,133,0.9); }    /* teal */
 @keyframes fhp-twinkle{ 0%,100%{ opacity:0; transform:scale(0.5); } 50%{ opacity:1; transform:scale(1.1); } }
 
-.fhp-hero-top{ position:relative; z-index:1; display:flex; align-items:flex-start; gap:14px; }
-.fhp-logo-badge{ width:60px; height:60px; border-radius:14px;
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  box-shadow: 0 4px 16px rgba(14,159,110,0.32);
-  transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
-.fhp-hero:hover .fhp-logo-badge{ transform: scale(1.06) rotate(-3deg); box-shadow:0 6px 22px rgba(14,159,110,0.42); }
-.fhp-logo-badge img, .fhp-logo-badge svg { width:60px; height:60px; display:block; }
-.fhp-title { font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.55rem; margin:0; line-height:1.1;
-  background: var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.fhp-subtitle { font-size:0.82rem; color: var(--muted); margin:2px 0 0 0; }
-.fhp-chips{ display:flex; gap:8px; margin-top:9px; }
-.fhp-chip{ font-size:0.66rem; padding:3px 10px; border-radius:20px; font-weight:600; letter-spacing:.02em;
-  transition: transform .2s var(--ease); }
-.fhp-chip:hover{ transform: translateY(-1px); }
-.chip-free{ background:rgba(39,174,96,0.15); color:var(--green); border:1px solid rgba(39,174,96,0.35); }
-.chip-build{ background:rgba(247,220,111,0.15); color:var(--gold); border:1px solid rgba(247,220,111,0.35); }
+/* ---- Reusable utilities (formerly repeated inline style="" attributes in FileHunter_Pro.py) ---- */
+.fhp-divider{ border:none; height:1px; background:var(--divider); margin:10px 0; }
+.fhp-icon{ margin-right:8px; }
+.fhp-icon-success{ color:var(--accent-success); }
+.fhp-icon-info{ color:var(--accent-info); }
+.fhp-icon-warning{ color:var(--accent-warning); }
+.fhp-icon-note{ color:var(--accent-note); }
+.fhp-icon-complete{ color:var(--accent-complete); }
+.fhp-help-text{ color:var(--text-secondary); margin-top:8px; }
+.fhp-help-note{ opacity:0.8; }
+.fhp-spacer-sm{ margin-top:4px; }
 
-/* Equal, fixed-size action boxes for Settings / Help / About, rendered as
-   plain Streamlit columns right below the hero card (no wrapper div — a
-   div opened in one st.markdown call can't actually enclose widgets
-   rendered in later calls, it just self-closes empty). */
+/* ---- Reusable glass-panel utility (background + border + blur combo) ---- */
+.fhp-glass{
+  background:var(--surface); border:1px solid var(--border);
+  backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+}
+.fhp-glass-solid{
+  background:var(--surface-2); border:1px solid var(--border);
+  backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+}
+
+.fhp-hero-top{ position:relative; z-index:1; display:flex; align-items:flex-start; gap:15px; }
+.fhp-logo-badge{ position:relative; width:58px; height:58px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  box-shadow: 0 4px 18px rgba(14,159,110,0.32);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+@keyframes fhp-ring-spin{ to{ transform:rotate(360deg); } }
+.st-key-fhp_hero:hover .fhp-logo-badge{ transform: scale(1.06); box-shadow:0 6px 24px rgba(14,159,110,0.46); }
+.fhp-logo-badge img, .fhp-logo-badge svg { width:58px; height:58px; display:block; position:relative; z-index:1; }
+
+/* Seam between the branding header and the nav row below it */
+.fhp-hero-nav-divider{ position:relative; z-index:1; height:1px; margin:14px -0.2rem 12px -0.2rem;
+  background: linear-gradient(90deg, transparent, rgba(150,215,190,0.28) 15%, rgba(150,215,190,0.28) 85%, transparent); }
+
+/* Segmented nav buttons, one accent hue per slot (Home/Settings/Help/About) */
+.st-key-fhp_hero [data-testid="stHorizontalBlock"]{ gap:8px; position:relative; z-index:1; }
+.st-key-fhp_hero [data-testid="stHorizontalBlock"] > [data-testid$="Column" i]:nth-child(1) .stButton>button{ --nav-accent: var(--emerald); --nav-accent-glow: rgba(14,159,110,0.42); }
+.st-key-fhp_hero [data-testid="stHorizontalBlock"] > [data-testid$="Column" i]:nth-child(2) .stButton>button{ --nav-accent: var(--teal);    --nav-accent-glow: rgba(22,160,133,0.42); }
+.st-key-fhp_hero [data-testid="stHorizontalBlock"] > [data-testid$="Column" i]:nth-child(3) .stButton>button{ --nav-accent: var(--gold);    --nav-accent-glow: rgba(247,220,111,0.42); }
+.st-key-fhp_hero [data-testid="stHorizontalBlock"] > [data-testid$="Column" i]:nth-child(4) .stButton>button{ --nav-accent: var(--green);   --nav-accent-glow: rgba(39,174,96,0.42); }
+
+.st-key-fhp_hero .stButton>button{
+  background: var(--nav-accent-glow, var(--surface-2)) !important;
+  border:1px solid var(--nav-accent, var(--border)) !important;
+  border-radius:12px !important; font-weight:600 !important; position:relative; overflow:hidden;
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease),
+              background .2s var(--ease), color .2s var(--ease) !important;
+}
+.st-key-fhp_hero .stButton>button p{ font-size:0.86rem; transition: none; }
+/* Sliding underline, brand-colored per button, on hover/keyboard focus */
+.st-key-fhp_hero .stButton>button::after{
+  content:""; position:absolute; left:16%; right:16%; bottom:2px; height:2px; border-radius:2px;
+  background: var(--nav-accent, var(--emerald)); transform: scaleX(0); transform-origin:center;
+  transition: transform .25s var(--ease);
+}
+.st-key-fhp_hero .stButton>button:hover,
+.st-key-fhp_hero .stButton>button:focus-visible{
+  transform: translateY(-2px);
+  background:var(--surface-2-solid) !important;
+  border-color: var(--nav-accent, var(--emerald)) !important;
+  color: var(--nav-accent, var(--emerald)) !important;
+  box-shadow: 0 8px 20px -6px var(--nav-accent-glow, rgba(14,159,110,0.4)) !important;
+}
+.st-key-fhp_hero .stButton>button:hover::after,
+.st-key-fhp_hero .stButton>button:focus-visible::after{ transform: scaleX(1); }
+.st-key-fhp_hero .stButton>button:active{ transform: translateY(0) scale(0.97); }
+
+/* Mobile nav bar + stage stepper — 2x2 grid layout (instead of 4 cramped
+   columns) so labels stay on one line and truncate with an ellipsis */
+@media (max-width:600px){
+  .st-key-fhp_hero [data-testid="stHorizontalBlock"],
+  .st-key-fhp_stepper [data-testid="stHorizontalBlock"] {
+    display:flex !important; flex-direction:row !important; flex-wrap:wrap !important;
+    gap:8px !important; width:100% !important; row-gap:8px !important;
+  }
+  .st-key-fhp_hero [data-testid="stHorizontalBlock"] > div,
+  .st-key-fhp_stepper [data-testid="stHorizontalBlock"] > div {
+    display:block !important; box-sizing:border-box !important;
+    flex:1 1 calc(50% - 4px) !important; max-width:calc(50% - 4px) !important;
+    width:auto !important; min-width:0 !important;
+  }
+  .st-key-fhp_hero [data-testid="stHorizontalBlock"] > div [data-testid="stVerticalBlock"],
+  .st-key-fhp_stepper [data-testid="stHorizontalBlock"] > div [data-testid="stVerticalBlock"] {
+    width:100% !important;
+  }
+  .st-key-fhp_hero .stButton, .st-key-fhp_stepper .stButton{ width:100% !important; }
+  .st-key-fhp_hero .stButton>button, .st-key-fhp_stepper .stButton>button{
+    width:100% !important; min-height:50px !important;
+    padding:6px 8px !important; box-sizing:border-box !important;
+    display:flex !important; flex-direction:row !important; align-items:center !important;
+    justify-content:center !important; gap:6px !important; overflow:hidden !important;
+  }
+  .st-key-fhp_hero .stButton>button > *, .st-key-fhp_stepper .stButton>button > * {
+    flex-shrink:0; min-width:0;
+  }
+  .st-key-fhp_hero .stButton>button p, .st-key-fhp_stepper .stButton>button p{
+    font-size:0.72rem !important; white-space:nowrap !important;
+    overflow:hidden !important; text-overflow:ellipsis !important;
+    margin:0 !important; min-width:0 !important; flex-shrink:1 !important;
+  }
+  .st-key-fhp_hero .stButton>button [data-testid="stIconMaterial"],
+  .st-key-fhp_stepper .stButton>button [data-testid="stIconMaterial"]{
+    flex-shrink:0 !important;
+  }
+}
+
+/* Below 380px even a 2-up grid gets tight with longer labels ("Settings",
+   "Download") — icon-only is clearer here than a truncated ellipsis. */
+@media (max-width:380px){
+  .st-key-fhp_hero .stButton>button p, .st-key-fhp_stepper .stButton>button p{
+    display:none !important;
+  }
+  .st-key-fhp_hero .stButton>button, .st-key-fhp_stepper .stButton>button{
+    gap:0 !important;
+  }
+}
+
+
+
+.fhp-title { font-family:'Manrope', sans-serif; font-weight:800; font-size:1.5rem; margin:0; line-height:1.12; letter-spacing:-.01em;
+  background: var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.fhp-subtitle { font-size:0.82rem; color: var(--muted); margin:3px 0 0 0; }
+.fhp-chips{ display:flex; gap:8px; margin-top:10px; }
+.fhp-chip{ font-family:'JetBrains Mono', monospace; font-size:0.64rem; padding:3px 10px 3px 8px; border-radius:20px; font-weight:600; letter-spacing:.02em;
+  display:inline-flex; align-items:center; gap:5px; transition: transform .2s var(--ease); }
+.fhp-chip::before{ content:""; width:5px; height:5px; border-radius:50%; background:currentColor; box-shadow:0 0 5px currentColor; }
+.fhp-chip:hover{ transform: translateY(-1px); }
+.chip-free{ background:rgba(39,174,96,0.16); color:var(--green); border:1px solid rgba(39,174,96,0.36); }
+.chip-build{ background:rgba(247,220,111,0.16); color:var(--gold); border:1px solid rgba(247,220,111,0.36); }
+
+/* ---- Settings / Help / About triggers ---- */
 [data-testid="stPopover"] button{
   height:46px !important; width:100% !important; white-space:nowrap;
-  border-radius:12px !important; border:1px solid var(--border) !important;
+  border-radius:var(--radius-sm) !important; border:1px solid var(--border) !important;
   background:var(--surface-2) !important; color:var(--text) !important; font-weight:600 !important;
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-rest);
   transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease) !important;
 }
-[data-testid="stPopover"] button:hover{
-  border-color:var(--teal) !important; transform: translateY(-2px);
-  box-shadow: var(--shadow-hover) !important;
-}
+[data-testid="stPopover"] button:hover{ border-color:var(--emerald) !important; transform: translateY(-2px); box-shadow: var(--shadow-hover) !important; }
 [data-testid="stPopover"] button:active{ transform: translateY(0); }
 
-/* Fixed popover footprint so Settings/Help/About don't jump size as their
-   content changes in real time (e.g. reset confirmation appearing) —
-   content scrolls internally instead of resizing the box. Desktop first,
-   mobile override below. */
 [data-testid="stPopoverBody"]{
   background:var(--surface-solid); border:1px solid var(--border);
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--shadow-hover); border-radius:14px;
+  box-shadow: var(--shadow-hover); border-radius:var(--radius-md);
   width:300px; min-height:190px; max-height:320px; overflow-y:auto;
   animation: fhp-pop-in .18s var(--ease);
 }
-@media (max-width:480px){
-  [data-testid="stPopoverBody"]{ width:min(90vw, 340px); min-height:170px; max-height:60vh; }
-}
+@keyframes fhp-pop-in{ from{ opacity:0; transform:translateY(-4px) scale(0.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+@media (max-width:480px){ [data-testid="stPopoverBody"]{ width:min(90vw, 340px); min-height:170px; max-height:60vh; } }
 
-/* Compact inline warning for confirm steps (Stop / Reset) — st.warning's
-   default alert is large (icon + generous padding); this keeps the
-   confirmation box small so the popover doesn't feel oversized. */
-.fhp-mini-warn{
-  background:rgba(247,220,111,0.12); border:1px solid rgba(247,220,111,0.35);
-  color:var(--gold); font-size:0.78rem; line-height:1.35;
-  padding:7px 10px; border-radius:8px; margin-bottom:8px;
-}
+.fhp-mini-warn{ background:rgba(247,220,111,0.10); border:1px solid rgba(247,220,111,0.34);
+  color:var(--gold); font-size:0.78rem; line-height:1.35; padding:7px 10px; border-radius:8px; margin-bottom:8px; }
 
-/* Icon + heading row — used at the top of Settings/Help/About popovers and
-   the FAQ card. Icon inherits theme color via currentColor/fill from the
-   SVGs in ICON_ASSETS/_FALLBACK_GLYPHS, so swapping the asset file never
-   requires touching this CSS. */
 .fhp-panel-head{ display:flex; align-items:center; gap:9px; margin-bottom:10px; }
 .fhp-panel-head .ico{ width:19px; height:19px; flex-shrink:0; color:var(--emerald); }
 .fhp-panel-head .ico svg{ width:100%; height:100%; display:block; }
-.fhp-panel-head .ttl{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.98rem; color:var(--text); }
+.fhp-panel-head .ttl{ font-family:'Manrope', sans-serif; font-weight:700; font-size:0.98rem; color:var(--text); }
 .fhp-panel-sub{ font-size:0.76rem; color:var(--muted); margin:-4px 0 12px 0; line-height:1.4; }
 
-/* ---- Cards: frosted glass panels with hover lift + glow ---- */
+/* ---- Cards: Harmony-smooth glass panels + JARVIS corner brackets ---- */
 .fhp-card {
   background: var(--surface);
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-  border:1px solid var(--border); border-radius:18px; padding:1.2rem 1.3rem; margin-bottom:1rem;
+  border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.2rem 1.35rem; margin-bottom:1rem;
   box-shadow: var(--shadow-rest);
   transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
 .fhp-card:hover{ transform: translateY(-3px); border-color:var(--border-hover); box-shadow: var(--shadow-hover); }
-.fhp-card-label{ font-size:0.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:10px; font-weight:600; }
+.fhp-card-label{ font-family:'JetBrains Mono', monospace; font-size:0.68rem; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--muted); margin-bottom:10px; font-weight:600; }
 
-/* Real bordered container (st.container(border=True)) styled to match
-   .fhp-card — unlike a raw <div> opened in one st.markdown call and closed
-   in another, this one actually nests any widgets placed inside it. Use
-   this wherever a card needs to wrap native widgets (progress bars,
-   expanders, buttons, etc). */
 [data-testid="stVerticalBlockBorderWrapper"]:has(> div > [data-testid="stVerticalBlock"]) {
   background: var(--surface) !important; border:1px solid var(--border) !important;
   backdrop-filter: var(--glass-blur) !important; -webkit-backdrop-filter: var(--glass-blur) !important;
   box-shadow: var(--shadow-rest) !important;
-  border-radius:18px !important; margin-bottom:1rem;
+  border-radius:var(--radius-lg) !important; margin-bottom:1rem;
   transition: box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
 [data-testid="stVerticalBlockBorderWrapper"]:has(> div > [data-testid="stVerticalBlock"]):hover{
   border-color:var(--border-hover) !important; box-shadow: var(--shadow-hover) !important;
 }
 
-/* ---- Mobile: stack button rows instead of squeezing them horizontally ---- */
-@media (max-width:480px){
-  [data-testid="stHorizontalBlock"]{ flex-direction:column !important; gap:0.5rem !important; }
-  [data-testid="stHorizontalBlock"] > div{ width:100% !important; }
+/* Mobile: wrap st.columns() groups into a 2-up grid instead of stacking
+   single-column; the nav bar and stage stepper override this above */
+@media (max-width:600px){
+  [data-testid="stHorizontalBlock"]{
+    flex-wrap: wrap !important; row-gap: 0.5rem !important; column-gap: 0.5rem !important;
+  }
+  [data-testid="stHorizontalBlock"] > [data-testid$="Column" i]{
+    flex: 1 1 46% !important; width: auto !important; min-width: 130px !important;
+  }
 }
 
-/* scanning highlight bar - reused for analyze/download progress only */
-.fhp-scanbar { position:relative; height:3px; width:100%; background:var(--surface-2-solid); border-radius:3px; overflow:hidden; margin-bottom:10px;}
+/* ---- Radar-sweep progress bar (analyze/download) ---- */
+/* Hide Streamlit's loading-skeleton placeholder: the live-progress fragment
+   reruns every LIVE_REFRESH_SEC, and without this the skeleton briefly
+   renders as a second bar identical in shape to the real progress bar.
+   Multiple selectors cover different Streamlit versions/DOM structures. */
+[data-testid="stSkeleton"],
+[data-testid*="Skeleton" i],
+.stSkeleton,
+[class*="skeleton" i] {
+  display: none !important;
+}
+
+.fhp-scanbar { position:relative; height:3px; width:100%; background:var(--surface-2-solid); border-radius:3px; overflow:hidden; margin-bottom:10px; }
 .fhp-scanbar .sweep{ position:absolute; top:0; left:-30%; width:30%; height:100%;
   background: var(--grad); filter: blur(0.4px); animation: sweep 1.4s linear infinite; }
 @keyframes sweep{ 0%{ left:-30%;} 100%{ left:100%;} }
 
-/* ---- Stat grid: glass tiles that lift + glow on hover ---- */
+/* ---- Batch timeline: ●───●───○───○ across a multi-batch download queue ---- */
+.fhp-timeline{ display:flex; align-items:center; flex-wrap:wrap; gap:0; margin:2px 0 12px 0; }
+.fhp-timeline-dot{ width:11px; height:11px; border-radius:50%; flex-shrink:0; box-sizing:border-box;
+  transition: background .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease); }
+.fhp-timeline-dot.done{ background:var(--emerald); border:2px solid var(--emerald); }
+.fhp-timeline-dot.active{ background:var(--gold); border:2px solid var(--gold);
+  box-shadow:0 0 0 4px rgba(247,220,111,0.22); animation: fhp-timeline-pulse 1.6s ease-in-out infinite; }
+.fhp-timeline-dot.pending{ background:transparent; border:2px solid var(--border); }
+.fhp-timeline-line{ height:2px; width:22px; min-width:12px; flex:1 1 auto; background:var(--border); }
+.fhp-timeline-line.done{ background:var(--emerald); }
+@keyframes fhp-timeline-pulse{ 0%,100%{ box-shadow:0 0 0 4px rgba(247,220,111,0.22); } 50%{ box-shadow:0 0 0 7px rgba(247,220,111,0.12); } }
+
+/* ---- Stat tiles: Nothing-style telemetry readouts ---- */
 .fhp-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; margin: 8px 0 16px 0; }
 .fhp-stat {
-  background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:12px 14px;
+  background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px;
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-rest);
   transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
 }
 .fhp-stat:hover{ transform: translateY(-3px); border-color:var(--border-hover); box-shadow: var(--shadow-hover); }
-.fhp-stat .n { font-family:'JetBrains Mono', monospace; font-size:1.25rem; font-weight:500; }
-.fhp-stat .l { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-top:2px; }
+.fhp-stat .n { font-family:'JetBrains Mono', monospace; font-size:1.25rem; font-weight:600; font-variant-numeric: tabular-nums; }
+.fhp-stat .l { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
 .fhp-stat.ok .n{ color: var(--green); }
 .fhp-stat.bad .n{ color: var(--danger); }
 .fhp-stat.gold .n{ color: var(--gold); }
 
-/* ---- Report rows (VT-style hoverable file list, now with a slide-in glow) ---- */
+/* ---- Report rows: HUD data-grid list ---- */
 .fhp-row { display:flex; align-items:center; gap:10px; padding:9px 8px; border-bottom:1px solid var(--border);
-  font-family:'JetBrains Mono', monospace; font-size:0.80rem; border-radius:10px;
+  font-family:'JetBrains Mono', monospace; font-size:0.80rem; border-radius:var(--radius-sm);
   transition: background .2s var(--ease), transform .2s var(--ease), padding-left .2s var(--ease); }
 .fhp-row:hover{ background:var(--surface-2); transform: translateX(2px); padding-left:12px; }
 .fhp-row:last-child{ border-bottom:none; }
 .fhp-row .idx{ color:var(--muted); width:26px; flex-shrink:0; }
 .fhp-row .fn { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.fhp-row .dt { color:var(--muted); width:118px; text-align:right; flex-shrink:0; }
-.fhp-row .sz { color:var(--muted); width:80px; text-align:right; flex-shrink:0; }
+.fhp-row .dt{ color:var(--muted); width:118px; text-align:right; flex-shrink:0; }
+.fhp-row .sz{ color:var(--muted); width:80px; text-align:right; flex-shrink:0; }
 .fhp-badge { font-size:0.68rem; padding:2px 8px; border-radius:20px; font-weight:600; flex-shrink:0; letter-spacing:.02em;
   transition: transform .2s var(--ease); }
 .fhp-row:hover .fhp-badge{ transform: scale(1.05); }
-.fhp-badge.reachable{ background:rgba(39,174,96,0.15); color:var(--green); border:1px solid rgba(39,174,96,0.35); }
-.fhp-badge.unreachable{ background:rgba(231,90,76,0.15); color:var(--danger); border:1px solid rgba(231,90,76,0.35); }
+.fhp-badge.reachable{ background:rgba(39,174,96,0.16); color:var(--green); border:1px solid rgba(39,174,96,0.36); }
+.fhp-badge.unreachable{ background:rgba(240,85,75,0.14); color:var(--danger); border:1px solid rgba(240,85,75,0.34); }
 
-/* ---- Buttons: lift + glow on hover, press feedback on click ---- */
+/* ---- Buttons: Harmony pill shape, emerald->gold primary ---- */
 .stButton>button, .stDownloadButton>button {
-  border-radius:12px !important; border:1px solid var(--border) !important;
+  border-radius:14px !important; border:1px solid var(--border) !important;
   background:var(--surface-2) !important; color:var(--text) !important; font-weight:600 !important;
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-rest);
   transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease), filter .2s var(--ease) !important;
 }
 .stButton>button[kind="primary"], .stDownloadButton>button[kind="primary"]{
-  background: var(--grad) !important; color:#0B0F0E !important; border:none !important;
-  box-shadow: 0 6px 20px rgba(14,159,110,0.30);
+  background: var(--grad) !important; color:#06170F !important; border:none !important;
+  box-shadow: 0 6px 22px rgba(14,159,110,0.36);
 }
 .stButton>button:hover, .stDownloadButton>button:hover{
   transform: translateY(-2px); border-color:var(--border-hover) !important; box-shadow: var(--shadow-hover) !important;
 }
 .stButton>button[kind="primary"]:hover, .stDownloadButton>button[kind="primary"]:hover{
-  box-shadow: 0 10px 28px rgba(14,159,110,0.42) !important; filter:brightness(1.05);
+  box-shadow: 0 10px 30px rgba(14,159,110,0.5) !important; filter:brightness(1.05);
 }
 .stButton>button:active, .stDownloadButton>button:active{ transform: translateY(0) scale(0.98); }
 
 /* ---- Progress bar ---- */
-.stProgress > div > div > div > div { background: var(--grad) !important; }
-.stProgress > div > div { border-radius:8px !important; overflow:hidden; }
+.stProgress { margin: 2px 0 6px 0; }
+.stProgress > div > div { border-radius:8px !important; overflow:hidden; height:10px !important;
+  background:var(--surface-2-solid) !important; }
+.stProgress > div > div > div > div {
+  background: var(--grad) !important; box-shadow: 0 0 12px rgba(14,159,110,0.45);
+}
+.stProgress [data-testid="stCaptionContainer"], .stProgress p {
+  font-family:'JetBrains Mono', monospace !important; font-size:0.72rem !important;
+  color:var(--text) !important; font-weight:600 !important;
+}
 
-/* ---- Misc: file uploader, glassed to match cards ---- */
+/* ---- st.status (live Analyzing/Downloading block) ---- */
+[data-testid="stStatusWidget"], [data-testid="stExpander"]:has([data-testid="stExpanderDetails"]) { scroll-margin-top: 1rem; }
+div[data-testid="stStatus"]{
+  /* No backdrop-filter: this container redraws every second while the
+     live-progress fragment is active, so a solid surface avoids the cost
+     of recomputing a blur layer on every tick. */
+  background:var(--surface-solid) !important; border:1px solid var(--border) !important;
+  border-radius:var(--radius-lg) !important;
+  box-shadow: var(--shadow-rest); overflow:hidden;
+}
+div[data-testid="stStatus"] summary{ font-family:'Manrope', sans-serif; font-weight:700; color:var(--text) !important; }
+div[data-testid="stStatus"] [data-testid="stStatusWidget-StatusIconRunning"],
+div[data-testid="stStatus"] svg[class*="Running"] { color:var(--gold) !important; }
+div[data-testid="stStatus"]:has(summary [data-testid="stIconMaterial"]) { animation: fhp-status-glow 2.4s ease-in-out infinite; }
+@keyframes fhp-status-glow{
+  0%,100%{ box-shadow: var(--shadow-rest); }
+  50%{ box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 0 0 1px rgba(14,159,110,0.3), 0 10px 30px rgba(0,0,0,0.42); }
+}
+
+/* ---- st.metric readouts inside status/report cards ---- */
+div[data-testid="stMetric"]{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:8px 10px !important; transition: border-color .25s var(--ease);
+}
+div[data-testid="stMetric"]:hover{ border-color:var(--border-hover); }
+div[data-testid="stMetricValue"]{ color:var(--text) !important; font-family:'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+div[data-testid="stMetricLabel"]{ color:var(--muted) !important; text-transform:uppercase; letter-spacing:.05em; }
+
+/* ---- st.code (Live log terminal) ---- */
+div[data-testid="stCodeBlock"] pre{
+  background:var(--surface-solid) !important; border:1px solid var(--border) !important;
+  border-radius:var(--radius-sm) !important; color:var(--green) !important;
+  font-family:'JetBrains Mono', monospace !important;
+}
+
+/* ---- Any native Streamlit spinner (uploads, reruns) ---- */
+div[data-testid="stSpinner"] > div{ border-top-color:var(--emerald) !important; border-right-color:var(--gold) !important; }
+div[data-testid="stSpinner"] p{ color:var(--muted) !important; }
+
+/* ---- File uploader ---- */
 [data-testid="stFileUploaderDropzone"]{
-  background:var(--surface); border:1px dashed var(--border) !important; border-radius:16px;
+  background:var(--surface); border:1px dashed var(--border) !important; border-radius:var(--radius-md);
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
   transition: border-color .25s var(--ease), background .25s var(--ease);
 }
-[data-testid="stFileUploaderDropzone"]:hover{ border-color:var(--teal) !important; background:var(--surface-2); }
-[data-testid="stFileUploaderDropzoneInstructions"] div,
-[data-testid="stFileUploaderDropzoneInstructions"] span { color:var(--text) !important; }
+[data-testid="stFileUploaderDropzone"]:hover{ border-color:var(--emerald) !important; background:var(--surface-2); }
+[data-testid="stFileUploaderDropzoneInstructions"] div, [data-testid="stFileUploaderDropzoneInstructions"] span { color:var(--text) !important; }
 [data-testid="stFileUploaderDropzoneInstructions"] small { color:var(--muted) !important; }
 [data-testid="stFileUploaderDropzone"] button {
   background:var(--surface-2-solid) !important; color:var(--text) !important;
@@ -270,29 +460,26 @@ header[data-testid="stHeader"],
 }
 [data-testid="stFileUploaderDropzone"] button:hover{ transform: translateY(-1px); }
 
-/* Uploaded-file chip (shown after a file is picked) — was rendering with
-   default light-theme text/icons, invisible against the dark surface. */
 [data-testid="stFileUploaderFile"] {
   background:var(--surface-2) !important; border:1px solid var(--border) !important;
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-  border-radius:14px !important; padding:9px 13px !important;
+  border-radius:var(--radius-md) !important; padding:9px 13px !important;
 }
-[data-testid="stFileUploaderFile"] div,
-[data-testid="stFileUploaderFile"] span,
-[data-testid="stFileUploaderFileName"] { color:var(--text) !important; }
-[data-testid="stFileUploaderFile"] small,
-[data-testid="stFileUploaderFileErrorMessage"] { color:var(--muted) !important; }
+[data-testid="stFileUploaderFile"] div, [data-testid="stFileUploaderFile"] span, [data-testid="stFileUploaderFileName"] { color:var(--text) !important; }
+[data-testid="stFileUploaderFile"] small, [data-testid="stFileUploaderFileErrorMessage"] { color:var(--muted) !important; }
 [data-testid="stFileUploaderFile"] svg { fill:var(--muted) !important; color:var(--muted) !important; }
 [data-testid="stFileUploaderDeleteBtn"] button svg { fill:var(--danger) !important; color:var(--danger) !important; }
-.stAlert { border-radius:14px; backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
-[data-testid="stExpander"] {
-  background:var(--surface); border:1px solid var(--border); border-radius:14px;
-  backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+.stAlert { border-radius:var(--radius-md); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
+[data-testid="stExpander"] { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+  backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
+/* "Live log" expander redraws with the status widget above — same reasoning */
+div[data-testid="stStatus"] [data-testid="stExpander"]{
+  background:var(--surface-2-solid) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
 }
 
-/* ---- Fixed footer: frosted glass bar ---- */
+/* ---- Fixed footer: HUD status bar ---- */
 .fhp-footer{ position:fixed; left:0; right:0; bottom:0; z-index:999;
-  background:rgba(10,15,13,0.72); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
+  background:rgba(7,15,12,0.82); backdrop-filter:blur(16px) saturate(150%); -webkit-backdrop-filter:blur(16px) saturate(150%);
   border-top:1px solid var(--border); }
 .fhp-footer-inner{ max-width:760px; margin:0 auto; padding:11px 20px;
   display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
@@ -306,8 +493,7 @@ header[data-testid="stHeader"],
 .status-ready{ background:var(--emerald); box-shadow:0 0 6px var(--emerald); }
 @keyframes fhp-pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 .fhp-footer-mid{ text-align:center; flex:1; min-width:220px; }
-.fhp-footer-mid .brand{ background:var(--grad);
-  -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:700; }
+.fhp-footer-mid .brand{ background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:700; }
 .fhp-footer-right{ flex-shrink:0; }
 .repo-link{ color:var(--gold); text-decoration:none; font-weight:600;
   display:inline-flex; align-items:center; gap:6px; transition: transform .2s var(--ease); }
@@ -315,35 +501,58 @@ header[data-testid="stHeader"],
 .repo-mark{ width:24px; height:24px; flex-shrink:0; }
 .repo-mark svg{ width:100%; height:100%; display:block; }
 
-/* ---- Mobile: larger touch targets, roomier stat/row spacing, no glass
-   backdrop-filter jank on low-power devices (kept subtle, not removed) ---- */
+/* ---- Mobile ---- */
 @media (max-width: 600px){
   .block-container{ padding-left:0.85rem; padding-right:0.85rem; padding-bottom:5.5rem; }
-  .fhp-hero{ padding:1rem 1.1rem; border-radius:18px; }
-  .fhp-title{ font-size:1.28rem; }
+  .st-key-fhp_hero{ padding:0.95rem 1.05rem 1.05rem 1.05rem !important; border-radius:20px !important; }
+  .fhp-titlebar{ margin:-.1rem -.1rem .55rem -.1rem; }
+  .fhp-title{ font-size:1.24rem; }
   .fhp-subtitle{ font-size:0.78rem; }
   .fhp-logo-badge{ width:44px; height:44px; }
   .fhp-logo-badge img, .fhp-logo-badge svg{ width:44px; height:44px; }
-  .fhp-card{ padding:1rem 1.05rem; border-radius:16px; }
-  .fhp-stats{ grid-template-columns:repeat(2, 1fr); gap:9px; }
+  .fhp-card{ padding:1rem 1.05rem; border-radius:18px; }
   .fhp-stat{ padding:10px 11px; }
   .fhp-stat .n{ font-size:1.1rem; }
-  .fhp-row{ font-size:0.72rem; padding:10px 6px; }
-  .fhp-row .dt{ display:none; }
-  .fhp-row .sz{ width:60px; }
+  .fhp-row{ font-size:0.68rem; padding:9px 5px; gap:6px; }
+  .fhp-row .dt{ width:74px; }
+  .fhp-row .sz{ width:56px; }
   [data-testid="stPopover"] button{ height:48px !important; }
   .stButton>button, .stDownloadButton>button{ min-height:46px !important; }
-  .fhp-footer-inner{ flex-direction:column; gap:5px; padding:9px 14px; text-align:center; }
-  .fhp-footer-mid{ order:3; font-size:0.68rem; }
 }
 
-/* Respect users who've asked the OS to minimize motion — keep the glass
-   and layout, drop the decorative animation loops and hover transforms. */
+/* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce){
-  .fhp-hero::before, .fhp-glitter span, .fhp-scanbar .sweep, .status-analysing, .status-downloading{ animation:none !important; }
-  .fhp-hero, .fhp-card, .fhp-stat, .fhp-row, .stButton>button, .stDownloadButton>button,
-  [data-testid="stPopover"] button, .fhp-logo-badge, [data-testid="stVerticalBlockBorderWrapper"]{
+  .stApp, .st-key-fhp_hero, .st-key-fhp_hero::before, .fhp-glitter span, .fhp-scanbar .sweep, .fhp-logo-badge::before,
+  .status-analysing, .status-downloading, div[data-testid="stStatus"]:has(summary [data-testid="stIconMaterial"]),
+  .fhp-timeline-dot.active {
+    animation:none !important;
+  }
+  .st-key-fhp_hero, .fhp-card, .fhp-stat, .fhp-row, .stButton>button, .stDownloadButton>button,
+  [data-testid="stPopover"] button, .fhp-logo-badge, [data-testid="stVerticalBlockBorderWrapper"],
+  .st-key-fhp_hero .stButton>button, .st-key-fhp_hero .stButton>button::after{
     transition:none !important;
   }
   .fhp-card:hover, .fhp-stat:hover{ transform:none !important; }
+  .st-key-fhp_hero .stButton>button:hover{ transform:none !important; }
+}
+
+/* Responsive safety net for the custom hero/footer flex rows, plus a
+   scaled-down st.metric() value font so progress figures wrap cleanly */
+.fhp-titlebar, .fhp-footer-inner { flex-wrap: wrap; row-gap: 6px; }
+.fhp-hero-top { flex-wrap: wrap; }
+div[data-testid="stMetric"] { padding: 8px 10px !important; }
+div[data-testid="stMetricValue"],
+div[data-testid="stMetricValue"] * {
+  font-size: 0.98rem !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+}
+div[data-testid="stMetricLabel"],
+div[data-testid="stMetricLabel"] * {
+  font-size: 0.7rem !important;
+  white-space: normal !important;
 }
